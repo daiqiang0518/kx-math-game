@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>开心的奥数大冒险 - 闯关+特训双模式</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html {
+            overflow-x: hidden;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            background: linear-gradient(145deg, #b8e1fc 0%, #f9e7b3 100%);
+            min-height: 100vh;
+            min-height: calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            font-family: 'Comic Neue', 'Comic Sans MS', 'Chalkboard SE', 'Poppins', cursive, sans-serif;
+            margin: 0;
+            padding: 10px;
+            padding-top: max(10px, env(safe-area-inset-top));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .game-container {
+            max-width: 1000px;
+            width: 100%;
+            background: #fffef7;
+            border-radius: 40px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            border: 4px solid #ffb882;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .mode-banner {
+            background: #ffd966;
+            padding: 10px 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #5a3a1a;
+            border-bottom: 4px solid #ffb347;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .mode-switch-btn {
+            background: #fff0c8;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            padding: 10px 22px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.1s;
+            color: #5a3a1a;
+            box-shadow: 0 3px 0 #c29a5a;
+            touch-action: manipulation;
+            min-height: 44px;
+        }
+
+        .mode-switch-btn.active {
+            background: #ff9f4a;
+            color: white;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+            transform: translateY(2px);
+        }
+
+        .map-area {
+            background: #a2d9ce;
+            padding: 15px 12px 20px;
+            border-bottom: 6px dashed #f9d56e;
+        }
+
+        .map-title {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #fff3bf;
+            text-shadow: 3px 3px 0 #cc8b4a;
+            margin-bottom: 15px;
+        }
+
+        .map-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px 8px;
+            margin-bottom: 15px;
+        }
+
+        .level-card, .topic-card {
+            background: #ffefbf;
+            border-radius: 30px;
+            text-align: center;
+            padding: 10px 4px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: #b45f2b;
+            cursor: pointer;
+            transition: 0.1s;
+            box-shadow: 0 6px 0 #d49b5f;
+            border: 2px solid #ffe3a3;
+            touch-action: manipulation;
+            min-height: 48px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.3;
+        }
+
+        .level-card.locked {
+            opacity: 0.6;
+            filter: grayscale(0.2);
+            cursor: not-allowed;
+            background: #cfcfb5;
+            box-shadow: 0 4px 0 #9e7b56;
+            transform: translateY(2px);
+        }
+
+        .level-card.unlocked {
+            background: #ffe29a;
+            box-shadow: 0 6px 0 #d49b5f;
+        }
+
+        .level-card.selected, .topic-card.selected {
+            background: #ffbb77;
+            border: 3px solid white;
+            color: #5a2a0a;
+            transform: scale(0.98);
+        }
+
+        .level-card:active, .topic-card:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #d49b5f;
+        }
+
+        .control-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .mode-selector {
+            background: #fff0c8;
+            border-radius: 50px;
+            display: inline-flex;
+            padding: 4px;
+            gap: 6px;
+        }
+
+        .mode-btn {
+            background: #ffd966;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: #5a3a1a;
+            transition: 0.05s;
+            font-size: 0.85rem;
+            touch-action: manipulation;
+            min-height: 40px;
+        }
+
+        .mode-btn.active {
+            background: #ff9f4a;
+            color: white;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .timer-badge {
+            background: #2d3e50;
+            color: #ffd966;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .quiz-panel {
+            padding: 18px 16px 25px;
+            background: #fff6ea;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .topic-badge {
+            background: #ffb882;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .lives-area {
+            display: flex;
+            gap: 6px;
+            background: #ffefcf;
+            padding: 5px 12px;
+            border-radius: 50px;
+            align-items: center;
+        }
+
+        .heart-icon {
+            font-size: 22px;
+            color: #ff5e5e;
+        }
+
+        .question-text {
+            font-size: 1.4rem;
+            font-weight: bold;
+            background: #fff4e0;
+            padding: 16px;
+            border-radius: 30px;
+            text-align: center;
+            margin: 15px 0;
+            box-shadow: inset 0 0 0 3px white, 0 6px 12px rgba(0, 0, 0, 0.05);
+            color: #5a3c1a;
+            word-break: break-word;
+        }
+
+        .options-area {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .option-btn {
+            background: #f2e2ca;
+            border: 3px solid #ffcd94;
+            border-radius: 60px;
+            padding: 12px 16px;
+            font-size: 1.05rem;
+            font-weight: bold;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.05s linear;
+            color: #4f2f0c;
+            touch-action: manipulation;
+            min-height: 50px;
+        }
+
+        .option-btn:hover {
+            background: #ffe0b5;
+        }
+
+        .option-btn:active {
+            background: #ffd9a0;
+            transform: scale(0.98);
+        }
+
+        .prefix {
+            background: #f5a742;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .feedback {
+            background: #fff1d6;
+            border-left: 10px solid #ffa54d;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            word-break: break-word;
+        }
+
+        .next-btn {
+            background: #ffb347;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 14px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: white;
+            box-shadow: 0 4px 0 #a45d1a;
+            margin-top: 10px;
+            width: 100%;
+            touch-action: manipulation;
+            min-height: 50px;
+        }
+
+        .next-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #a45d1a;
+        }
+
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 248, 230, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 1.6rem;
+            color: #ff9f4a;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+        }
+
+        .egg-box {
+            background: #fff3cd;
+            border: 4px solid #ffc107;
+            border-radius: 24px;
+            padding: 16px;
+            margin-top: 16px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .egg-title {
+            font-size: 1.3rem;
+            color: #d68910;
+            margin-bottom: 8px;
+        }
+
+        .egg-content {
+            font-size: 1rem;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .restart-btn {
+            background: #ff7f50;
+            border: none;
+            font-family: inherit;
+            font-weight: bold;
+            font-size: 1.1rem;
+            padding: 14px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            color: white;
+            margin-top: 24px;
+            box-shadow: 0 5px 0 #d35400;
+            touch-action: manipulation;
+            min-height: 50px;
+        }
+
+        .restart-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 2px 0 #d35400;
+        }
+
+        /* ============ 手机小屏适配 ============ */
+        @media (max-width: 480px) {
+            body {
+                padding: 6px;
+            }
+
+            .game-container {
+                border-radius: 24px;
+                border-width: 3px;
+            }
+
+            .mode-banner {
+                padding: 8px 10px;
+                font-size: 1rem;
+                gap: 8px;
+            }
+
+            .mode-switch-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+
+            .map-area {
+                padding: 10px 8px 15px;
+            }
+
+            .map-title {
+                font-size: 1.1rem;
+                margin-bottom: 10px;
+            }
+
+            .map-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px 6px;
+            }
+
+            .level-card, .topic-card {
+                border-radius: 20px;
+                padding: 8px 3px;
+                font-size: 0.75rem;
+                min-height: 44px;
+            }
+
+            .control-bar {
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .mode-btn {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+
+            .timer-badge {
+                font-size: 1rem;
+                padding: 5px 10px;
+            }
+
+            .quiz-panel {
+                padding: 12px 10px 18px;
+            }
+
+            .topic-badge {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+
+            .heart-icon {
+                font-size: 18px;
+            }
+
+            .question-text {
+                font-size: 1.15rem;
+                padding: 12px;
+                border-radius: 20px;
+                margin: 10px 0;
+            }
+
+            .option-btn {
+                padding: 10px 12px;
+                font-size: 0.95rem;
+                gap: 10px;
+                min-height: 46px;
+            }
+
+            .prefix {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                font-size: 0.9rem;
+            }
+
+            .feedback {
+                font-size: 0.85rem;
+                padding: 10px 12px;
+                border-left-width: 6px;
+            }
+
+            .next-btn {
+                font-size: 1rem;
+                padding: 12px 16px;
+            }
+
+            .celebration {
+                font-size: 1.2rem;
+            }
+
+            .egg-box {
+                max-width: 95%;
+                padding: 12px;
+            }
+
+            .egg-title {
+                font-size: 1.1rem;
+            }
+
+            .egg-content {
+                font-size: 0.9rem;
+            }
+
+            .restart-btn {
+                font-size: 1rem;
+                padding: 12px 24px;
+            }
+        }
+
+        /* 平板中等屏幕 */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .map-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px 8px;
+            }
+
+            .level-card, .topic-card {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 横屏手机优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            body {
+                padding: 4px;
+            }
+
+            .game-container {
+                border-radius: 20px;
+            }
+
+            .map-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px 5px;
+            }
+
+            .level-card, .topic-card {
+                padding: 6px 2px;
+                font-size: 0.7rem;
+                min-height: 36px;
+            }
+
+            .question-text {
+                font-size: 1.1rem;
+                padding: 10px;
+                margin: 8px 0;
+            }
+
+            .quiz-panel {
+                padding: 10px 12px 15px;
+            }
+
+            .celebration {
+                font-size: 1.1rem;
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameRoot"></div>
+
+<script>
+    // ==================== 15个专题题库 (每专题至少6题) ====================
+    const TOPICS = [
+        "上楼问题", "植树问题", "方阵问题", "找规律", "平均数问题",
+        "加减数字谜", "乘除数字谜", "最短路线问题", "巧求周长", "年龄问题",
+        "还原问题", "鸡兔同笼问题", "盈亏问题", "速算与巧算乘除法", "归一问题"
+    ];
+
+    const FULL_QUESTION_BANK = [];
+
+    // 构建题库 (每专题6题保证随机5道不重复)
+    FULL_QUESTION_BANK[0] = [
+        { text: "小刚从1楼走到3楼用了24秒，照这样，从1楼走到7楼需要多少秒？", options: ["60秒", "72秒", "84秒", "96秒"], answer: "B", explanation: "每层12秒，1到7楼6层，72秒。" },
+        { text: "乐乐爬楼梯，每上一层需要18秒，她从1楼到6楼共需几秒？", options: ["90秒", "108秒", "72秒", "126秒"], answer: "A", explanation: "5层×18=90秒。" },
+        { text: "明明上楼，从1楼到4楼用了27秒，速度不变，从1楼到8楼需要？", options: ["63秒", "54秒", "72秒", "81秒"], answer: "A", explanation: "每层9秒，7层=63秒。" },
+        { text: "小红从一楼到五楼走了80个台阶，每层台阶数相同，每层多少台阶？", options: ["16", "20", "15", "18"], answer: "B", explanation: "4段楼梯，80÷4=20。" },
+        { text: "从一楼到六楼，爸爸比小明快一倍，小明用了50秒，爸爸用了多少秒？", options: ["25秒", "30秒", "20秒", "40秒"], answer: "A", explanation: "小明每层10秒，爸爸每层5秒，5层×5=25秒。" },
+        { text: "佳佳从1楼到5楼用了80秒，以相同速度到11楼还要多少秒？", options: ["120秒", "150秒", "160秒", "140秒"], answer: "A", explanation: "每层20秒，5到11楼6层需120秒。" }
+    ];
+    FULL_QUESTION_BANK[1] = [
+        { text: "在一条长200米的道路一边每隔10米种一棵树（两端都种），一共种多少棵？", options: ["20棵", "21棵", "19棵", "22棵"], answer: "B", explanation: "段数20，两端都种21棵。" },
+        { text: "在一条长120米的走廊一侧，每隔8米放一盆花（两端不放），需要多少盆？", options: ["14盆", "15盆", "16盆", "13盆"], answer: "A", explanation: "段数15，两端不放14盆。" },
+        { text: "圆形花坛周长60米，每隔5米摆一盆花，一共摆多少盆？", options: ["12盆", "13盆", "11盆", "10盆"], answer: "A", explanation: "封闭图形60÷5=12盆。" },
+        { text: "公路一边从头到尾共种了41棵杨树，每两棵距离6米，公路长多少米？", options: ["240米", "246米", "252米", "234米"], answer: "A", explanation: "间隔40个，40×6=240米。" },
+        { text: "小路长180米，每隔9米一棵，一端种一端不种，共几棵？", options: ["20棵", "21棵", "19棵", "22棵"], answer: "A", explanation: "段数=棵数=20棵。" },
+        { text: "在200米跑道一旁插旗，每隔5米插一面（两端都插），需要多少面旗？", options: ["40面", "41面", "39面", "42面"], answer: "B", explanation: "200÷5=40段，两端都插40+1=41面。" }
+    ];
+    FULL_QUESTION_BANK[2] = [
+        { text: "同学们排成正方形方阵，每行每列8人，最外层一共有多少人？", options: ["28人", "32人", "30人", "36人"], answer: "A", explanation: "(8-1)×4=28人。" },
+        { text: "一个方阵，最外层共48人，这个方阵每边多少人？", options: ["12", "13", "11", "14"], answer: "B", explanation: "48÷4+1=13人。" },
+        { text: "仪仗队排成方阵，每边15人，整个方阵多少人？", options: ["225", "210", "256", "196"], answer: "A", explanation: "15×15=225。" },
+        { text: "空心方阵最外层每边12人，最内层每边6人，共几层？", options: ["3层", "4层", "5层", "2层"], answer: "B", explanation: "(12-6)÷2+1=4层。" },
+        { text: "方阵增加一行一列需要增加23人，原方阵多少人？", options: ["121", "144", "100", "169"], answer: "A", explanation: "2n+1=23 → n=11 → 121人。" },
+        { text: "一个方阵最外层有36人，这个方阵共有多少人？", options: ["100", "81", "121", "64"], answer: "A", explanation: "每边36÷4+1=10人，共100人。" }
+    ];
+    FULL_QUESTION_BANK[3] = [
+        { text: "2, 5, 10, 17, ( ? )", options: ["24", "26", "28", "30"], answer: "B", explanation: "差3,5,7,下一个差9得26。" },
+        { text: "1, 3, 6, 10, 15, ( ? )", options: ["21", "20", "22", "24"], answer: "A", explanation: "差递增2,3,4,5，下一个差6得21。" },
+        { text: "4, 9, 16, 25, ( ? )", options: ["36", "49", "32", "40"], answer: "A", explanation: "2²,3²,4²,5²,6²=36。" },
+        { text: "11, 22, 34, 47, ( ? )", options: ["61", "59", "60", "62"], answer: "A", explanation: "差11,12,13,下一个差14得61。" },
+        { text: "1, 4, 9, 16, 25, 36, ( ? )", options: ["49", "48", "45", "50"], answer: "A", explanation: "连续平方，7²=49。" },
+        { text: "3, 6, 12, 24, ( ? )", options: ["48", "36", "32", "40"], answer: "A", explanation: "每个乘2，下一个48。" }
+    ];
+    FULL_QUESTION_BANK[4] = [
+        { text: "小明语文数学英语平均92，语文89，数学94，英语？", options: ["93", "92", "91", "94"], answer: "A", explanation: "276-89-94=93。" },
+        { text: "三个数平均25，加第四个数平均28，第四个数？", options: ["37", "36", "38", "40"], answer: "A", explanation: "112-75=37。" },
+        { text: "5个连续自然数平均12，最大数？", options: ["14", "15", "13", "16"], answer: "A", explanation: "中间12，最大14。" },
+        { text: "前三次平均88，第四次后平均90，第四次？", options: ["96", "94", "92", "98"], answer: "A", explanation: "360-264=96。" },
+        { text: "甲乙平均80，乙丙85，甲丙82，三人平均？", options: ["82", "83", "81", "84"], answer: "A", explanation: "和247，平均≈82.3≈82。" },
+        { text: "四个数的平均数是15，加上第五个数后平均16，第五个数是？", options: ["20", "18", "22", "24"], answer: "A", explanation: "前四和60，五数和80，第五数20。" }
+    ];
+    FULL_QUESTION_BANK[5] = [
+        { text: "我+爱+数=12，爱+数+学=15，我+学=9，求我？", options: ["3", "4", "5", "6"], answer: "A", explanation: "三式相加得我=3。" },
+        { text: "A+B=12，B+C=15，A+C=13，A=？", options: ["5", "6", "4", "7"], answer: "A", explanation: "A=5。" },
+        { text: "△+□=20，○+□=18，△+○=22，□=？", options: ["8", "7", "9", "10"], answer: "A", explanation: "□=8。" },
+        { text: "4□+□6=82，两方框数字和？", options: ["8", "9", "10", "7"], answer: "B", explanation: "a=6,b=3，和9。" },
+        { text: "★+★+●=16，★+●+●=14，★-●=？", options: ["2", "3", "4", "1"], answer: "A", explanation: "相减得2。" },
+        { text: "☆+◇=18，☆-◇=4，☆×◇=？", options: ["77", "80", "72", "84"], answer: "A", explanation: "☆=11，◇=7，积77。" }
+    ];
+    FULL_QUESTION_BANK[6] = [
+        { text: "A×B=24，A×C=36，B+C=10，求A？", options: ["6", "4", "3", "8"], answer: "A", explanation: "A(B+C)=60, A=6。" },
+        { text: "积72，一个因数除以2，积变成？", options: ["36", "144", "72", "24"], answer: "A", explanation: "72÷2=36。" },
+        { text: "△×□=48，△÷2×□×3 = ?", options: ["72", "144", "96", "64"], answer: "A", explanation: "48×3÷2=72。" },
+        { text: "两数积60，和17，两数是？", options: ["5和12", "6和10", "3和20", "4和15"], answer: "A", explanation: "5×12=60。" },
+        { text: "★×7=56，★=？", options: ["7", "8", "9", "6"], answer: "B", explanation: "56÷7=8。" },
+        { text: "一个数乘4再加上8等于40，这个数是？", options: ["8", "9", "7", "10"], answer: "A", explanation: "(40-8)÷4=8。" }
+    ];
+    FULL_QUESTION_BANK[7] = [
+        { text: "2×2网格从A到B只能右或上，最短路线几种？", options: ["4种", "6种", "8种", "10种"], answer: "B", explanation: "C(4,2)=6。" },
+        { text: "家到书店3条路，书店到学校4条路，共几条？", options: ["12", "7", "8", "10"], answer: "A", explanation: "3×4=12。" },
+        { text: "3×3格子从左上到右下最短走法？", options: ["20", "16", "12", "18"], answer: "A", explanation: "C(6,3)=20。" },
+        { text: "家→公园2路，公园→游乐场3路，游乐场→学校2路，共？", options: ["12", "7", "8", "10"], answer: "A", explanation: "2×3×2=12。" },
+        { text: "5×4网格最短路线几种？", options: ["126", "120", "84", "210"], answer: "A", explanation: "C(9,4)=126。" },
+        { text: "从A到B需要走4段横路3段竖路，最短路线多少？", options: ["35", "21", "28", "42"], answer: "A", explanation: "C(7,3)=35种。" }
+    ];
+    FULL_QUESTION_BANK[8] = [
+        { text: "长方形长10cm宽6cm，周长？", options: ["32cm", "30cm", "28cm", "36cm"], answer: "A", explanation: "(10+6)×2=32。" },
+        { text: "正方形边长增加3cm，周长增加？", options: ["12cm", "6cm", "9cm", "3cm"], answer: "A", explanation: "4×3=12。" },
+        { text: "两个长8宽4长方形拼成正方形，周长？", options: ["32cm", "40cm", "48cm", "36cm"], answer: "A", explanation: "边长8，周长32。" },
+        { text: "长方形长是宽2倍，周长36cm，宽？", options: ["6cm", "8cm", "9cm", "5cm"], answer: "A", explanation: "6x=36,x=6。" },
+        { text: "锯齿形水平总长12，竖直总长8，周长？", options: ["40", "36", "32", "44"], answer: "A", explanation: "(12+8)×2=40。" },
+        { text: "正方形边长10，周长？", options: ["40", "30", "20", "50"], answer: "A", explanation: "10×4=40。" }
+    ];
+    FULL_QUESTION_BANK[9] = [
+        { text: "爸爸36，儿子6，几年后爸爸是儿子3倍？", options: ["9年", "8年", "7年", "10年"], answer: "A", explanation: "x=9。" },
+        { text: "妈妈30，女儿4，几年后妈妈是女儿2倍？", options: ["22年", "20年", "18年", "24年"], answer: "A", explanation: "x=22。" },
+        { text: "爸爸35，儿子5，几年后爸爸是儿子4倍？", options: ["5年", "4年", "6年", "3年"], answer: "A", explanation: "x=5。" },
+        { text: "爷爷60，孙子8，几年后爷爷是孙子3倍？", options: ["18年", "16年", "20年", "14年"], answer: "A", explanation: "x=18。" },
+        { text: "小红7，妈妈31，几年后妈妈是小红3倍？", options: ["5年", "6年", "4年", "7年"], answer: "A", explanation: "x=5。" },
+        { text: "父亲比儿子大28岁，4年后父亲年龄是儿子3倍，儿子现在几岁？", options: ["10", "12", "8", "14"], answer: "A", explanation: "设子x，父x+28，x+32=3(x+4)→x=10。" }
+    ];
+    FULL_QUESTION_BANK[10] = [
+        { text: "数+5，×2，-4=20，原数？", options: ["7", "6", "8", "5"], answer: "A", explanation: "逆推得7。" },
+        { text: "某数×3+6=30，这个数？", options: ["8", "7", "9", "10"], answer: "A", explanation: "(30-6)÷3=8。" },
+        { text: "数-8，÷4，+3=7，原数？", options: ["24", "20", "16", "28"], answer: "A", explanation: "逆推24。" },
+        { text: "苹果卖出总数一半多2，再卖出剩一半少1，剩8个，原来？", options: ["32", "34", "30", "36"], answer: "A", explanation: "逆推得32。" },
+        { text: "数+6，×3，-9=30，原数？", options: ["7", "8", "9", "10"], answer: "A", explanation: "逆推得7。" },
+        { text: "一个数除以4加5等于9，这个数是？", options: ["16", "12", "20", "24"], answer: "A", explanation: "(9-5)×4=16。" }
+    ];
+    FULL_QUESTION_BANK[11] = [
+        { text: "鸡兔10只，脚26只，兔几只？", options: ["3", "4", "5", "6"], answer: "A", explanation: "假设全鸡，差6脚，兔3只。" },
+        { text: "鸡兔35头，94脚，鸡几只？", options: ["23", "12", "24", "13"], answer: "A", explanation: "鸡23只。" },
+        { text: "自行车三轮车12辆，轮29个，三轮车几辆？", options: ["5", "6", "7", "8"], answer: "A", explanation: "5辆。" },
+        { text: "2元5元共20张，共76元，5元几张？", options: ["12", "8", "10", "6"], answer: "A", explanation: "12张。" },
+        { text: "脚比头多20，兔几只？", options: ["10", "8", "12", "6"], answer: "A", explanation: "兔10只时，脚比头多20。" },
+        { text: "鸡兔共20只，脚50只，兔几只？", options: ["5", "6", "4", "7"], answer: "A", explanation: "(50-40)÷2=5只兔。" }
+    ];
+    FULL_QUESTION_BANK[12] = [
+        { text: "每人4个多9，每人5个少6，多少人？", options: ["15", "14", "16", "13"], answer: "A", explanation: "(9+6)÷1=15人。" },
+        { text: "每人3本多5，每人4本少8，多少人？", options: ["13", "12", "14", "11"], answer: "A", explanation: "(5+8)÷1=13。" },
+        { text: "每人6块少4，每人5块多3，多少人？", options: ["7", "8", "6", "9"], answer: "A", explanation: "(4+3)÷1=7。" },
+        { text: "每条坐6人空2位，坐5人多4人，船几条？", options: ["6", "5", "7", "8"], answer: "A", explanation: "(4+2)÷1=6条。" },
+        { text: "每人3个多2，每人4个少3，多少人？", options: ["5", "6", "4", "7"], answer: "A", explanation: "(2+3)÷1=5。" },
+        { text: "每人分7块多8块，每人分8块少6块，多少人？", options: ["14", "15", "13", "16"], answer: "A", explanation: "(8+6)÷1=14人。" }
+    ];
+    FULL_QUESTION_BANK[13] = [
+        { text: "125×32×25 = ?", options: ["100000", "10000", "1000000", "10000000"], answer: "A", explanation: "100000。" },
+        { text: "99×25 = ?", options: ["2475", "2375", "2575", "2675"], answer: "A", explanation: "2475。" },
+        { text: "25×16 = ?", options: ["400", "300", "500", "200"], answer: "A", explanation: "400。" },
+        { text: "7500÷125 = ?", options: ["60", "50", "70", "80"], answer: "A", explanation: "60。" },
+        { text: "45×11 = ?", options: ["495", "465", "505", "475"], answer: "A", explanation: "495。" },
+        { text: "999×8 = ?", options: ["7992", "7998", "8000", "7990"], answer: "A", explanation: "1000×8-8=7992。" }
+    ];
+    FULL_QUESTION_BANK[14] = [
+        { text: "3台机器4小时生产480个，1台1小时生产多少？", options: ["40", "30", "50", "60"], answer: "A", explanation: "480÷3÷4=40。" },
+        { text: "5人6天挖300米，1人1天挖多少米？", options: ["10", "12", "8", "15"], answer: "A", explanation: "300÷5÷6=10。" },
+        { text: "2辆卡车3次运36吨，1辆1次运多少吨？", options: ["6", "8", "9", "12"], answer: "A", explanation: "36÷2÷3=6。" },
+        { text: "4台磨面机5小时磨面80吨，每台每小时磨面？", options: ["4", "5", "6", "3"], answer: "A", explanation: "80÷4÷5=4。" },
+        { text: "8辆卡车每辆运4次共128吨，每辆每次运？", options: ["4", "5", "6", "3"], answer: "A", explanation: "128÷8÷4=4。" },
+        { text: "3个工人5天加工300个零件，1人1天加工几个？", options: ["20", "25", "30", "15"], answer: "A", explanation: "300÷3÷5=20。" }
+    ];
+
+    // ==================== 游戏状态 ====================
+    let globalMode = "campaign";   // "campaign" 或 "practice"
+    // 闯关模式数据
+    let currentLevel = 0;
+    let currentSubQuestions = [];
+    let currentQIndex = 0;
+    let lives = 3;
+    let unlockedLevels = 1;
+    // 特训模式数据
+    let practiceTopic = 0;
+    let practiceQuestions = [];
+    let practiceIndex = 0;
+    let practiceLives = 3;
+    // 通用
+    let gameWin = false;
+    let gameOverFlag = false;
+    let waitingNext = false;
+    let lastFeedback = "";
+    let currentQuestionObj = null;
+    let isTimedMode = false;
+    let timerInterval = null;
+    let timeLeft = 30;
+    let isTimerRunning = false;
+
+    // ==================== 工具函数 ====================
+    // 随机打乱数组
+    function shuffleArray(arr) {
+        return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    // 从题库随机选5题不重复
+    function getRandomQuestions(topicIdx) {
+        const allQs = FULL_QUESTION_BANK[topicIdx];
+        const shuffled = shuffleArray(allQs);
+        return shuffled.slice(0, 5);
+    }
+
+    // 格式化时间显示
+    function formatTime(seconds) {
+        return seconds < 10 ? `0${seconds}` : seconds;
+    }
+
+    // 停止计时器
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isTimerRunning = false;
+        }
+    }
+
+    // 重置计时器
+    function resetTimer() {
+        stopTimer();
+        timeLeft = 30;
+        updateTimerDisplay();
+    }
+
+    // 更新计时器显示
+    function updateTimerDisplay() {
+        const timerEl = document.querySelector('.timer-badge');
+        if (timerEl) {
+            timerEl.textContent = `⏱ ${formatTime(timeLeft)}`;
+        }
+    }
+
+    // 启动计时器
+    function startTimer() {
+        if (isTimerRunning || !isTimedMode) return;
+        isTimerRunning = true;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                stopTimer();
+                handleWrongAnswer("时间到啦！");
+            }
+        }, 1000);
+    }
+
+    // ==================== 界面渲染 ====================
+    // 渲染模式切换banner
+    function renderModeBanner() {
+        return `
+            <div class="mode-banner">
+                <button class="mode-switch-btn ${globalMode === 'campaign' ? 'active' : ''}" id="btn-campaign">闯关模式</button>
+                <button class="mode-switch-btn ${globalMode === 'practice' ? 'active' : ''}" id="btn-practice">特训模式</button>
+            </div>
+        `;
+    }
+
+    // 渲染闯关模式地图
+    function renderCampaignMap() {
+        let levelCards = '';
+        for (let i = 1; i <= 15; i++) {
+            const isUnlocked = i <= unlockedLevels;
+            levelCards += `
+                <div class="level-card ${isUnlocked ? 'unlocked' : 'locked'}" data-level="${i}">
+                    第${i}关<br/>${TOPICS[i-1]}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="map-area">
+                <div class="map-title">开心的奥数闯关地图 🗺️</div>
+                <div class="map-grid">${levelCards}</div>
+                <div class="control-bar">
+                    <div class="mode-selector">
+                        <button class="mode-btn ${isTimedMode ? 'active' : ''}" id="btn-timed">计时模式</button>
+                        <button class="mode-btn ${!isTimedMode ? 'active' : ''}" id="btn-notimed">休闲模式</button>
+                    </div>
+                    <div class="timer-badge">⏱ ${formatTime(timeLeft)}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 渲染特训模式选题界面
+    function renderPracticeTopicSelect() {
+        let topicCards = '';
+        for (let i = 0; i < 15; i++) {
+            topicCards += `
+                <div class="topic-card" data-topic="${i}">
+                    ${TOPICS[i]}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="map-area">
+                <div class="map-title">开心的奥数特训选题 📚</div>
+                <div class="map-grid">${topicCards}</div>
+                <div class="control-bar">
+                    <div class="mode-selector">
+                        <button class="mode-btn ${isTimedMode ? 'active' : ''}" id="btn-timed">计时模式</button>
+                        <button class="mode-btn ${!isTimedMode ? 'active' : ''}" id="btn-notimed">休闲模式</button>
+                    </div>
+                    <div class="timer-badge">⏱ ${formatTime(timeLeft)}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 渲染题目面板
+    function renderQuestionPanel() {
+        // 确定当前用的题目数据
+        const isCampaign = globalMode === 'campaign';
+        const qData = isCampaign ? currentSubQuestions : practiceQuestions;
+        const qIdx = isCampaign ? currentQIndex : practiceIndex;
+        const totalQs = qData.length;
+        const currentLives = isCampaign ? lives : practiceLives;
+
+        // 没有题目数据时返回空
+        if (!qData || qIdx >= totalQs) return '';
+
+        currentQuestionObj = qData[qIdx];
+        const { text, options } = currentQuestionObj;
+
+        // 生成选项按钮
+        let optionsHtml = '';
+        const prefixes = ['A', 'B', 'C', 'D'];
+        options.forEach((opt, idx) => {
+            optionsHtml += `
+                <button class="option-btn" data-opt="${prefixes[idx]}">
+                    <span class="prefix">${prefixes[idx]}</span>
+                    <span>${opt}</span>
+                </button>
+            `;
+        });
+
+        // 生成爱心
+        let heartsHtml = '';
+        for (let i = 0; i < currentLives; i++) {
+            heartsHtml += '<span class="heart-icon">❤️</span>';
+        }
+
+        // 反馈信息
+        const feedbackHtml = lastFeedback ? `<div class="feedback">${lastFeedback}</div>` : '';
+
+        // 下一题按钮（只有等待下一步时显示）
+        const nextBtnHtml = waitingNext ? `
+            <button class="next-btn" id="btn-next">
+                ${qIdx < totalQs - 1 ? '下一题 👉' : '完成挑战 🎉'}
+            </button>
+        ` : '';
+
+        return `
+            <div class="quiz-panel">
+                <div class="question-header">
+                    <div class="topic-badge">
+                        ${isCampaign ? `第${currentLevel}关 · ${TOPICS[currentLevel-1]}` : `特训 · ${TOPICS[practiceTopic]}`}
+                        (${qIdx+1}/${totalQs})
+                    </div>
+                    <div class="lives-area">
+                        ${heartsHtml}
+                    </div>
+                </div>
+                <div class="question-text">${text}</div>
+                <div class="options-area">${optionsHtml}</div>
+                ${feedbackHtml}
+                ${nextBtnHtml}
+            </div>
+        `;
+    }
+
+    // 渲染胜利彩蛋界面
+    function renderWinCelebration() {
+        const eggTexts = [
+            "🎉 恭喜开心！你成功通关啦！妈妈为你骄傲～",
+            "🎁 给开心的彩蛋：坚持努力的你最棒，数学小能手就是你！",
+            "🌟 开心超厉害！解锁新成就：奥数小达人，继续加油～",
+            "🍬 给开心的小奖励：今天可以多玩10分钟喜欢的游戏哦～",
+            "🏆 开心胜利啦！这份坚持和认真，一定会让数学越来越好～"
+        ];
+        const randomEgg = eggTexts[Math.floor(Math.random() * eggTexts.length)];
+
+        return `
+            <div class="celebration">
+                <div>恭喜开心完成挑战！🥳</div>
+                <div class="egg-box">
+                    <div class="egg-title">给开心的彩蛋 🎊</div>
+                    <div class="egg-content">${randomEgg}</div>
+                </div>
+                <button class="restart-btn" id="btn-restart">再来一局 🔄</button>
+            </div>
+        `;
+    }
+
+    // 渲染游戏结束界面
+    function renderGameOver() {
+        return `
+            <div class="celebration">
+                <div>没关系开心，下次继续加油！💪</div>
+                <div class="egg-box">
+                    <div class="egg-title">给开心的小鼓励 📝</div>
+                    <div class="egg-content">错题是成长的阶梯，每一次尝试都在进步，妈妈相信你超棒的！</div>
+                </div>
+                <button class="restart-btn" id="btn-restart">重新开始 🔄</button>
+            </div>
+        `;
+    }
+
+    // 整体渲染函数
+    function renderGame() {
+        const gameRoot = document.getElementById('gameRoot');
+        let html = renderModeBanner();
+
+        if (gameWin) {
+            html += renderWinCelebration();
+        } else if (gameOverFlag) {
+            html += renderGameOver();
+        } else {
+            // 渲染地图/选题 或 题目面板
+            if (globalMode === 'campaign') {
+                if (currentLevel === 0) {
+                    html += renderCampaignMap();
+                } else {
+                    html += renderQuestionPanel();
+                }
+            } else {
+                if (practiceTopic === -1) {
+                    html += renderPracticeTopicSelect();
+                } else {
+                    html += renderQuestionPanel();
+                }
+            }
+        }
+
+        gameRoot.innerHTML = html;
+        bindEvents();
+    }
+
+    // ==================== 事件处理 ====================
+    function bindEvents() {
+        // 模式切换按钮
+        document.getElementById('btn-campaign')?.addEventListener('click', () => {
+            if (globalMode !== 'campaign') {
+                globalMode = 'campaign';
+                resetGameState();
+                renderGame();
+            }
+        });
+
+        document.getElementById('btn-practice')?.addEventListener('click', () => {
+            if (globalMode !== 'practice') {
+                globalMode = 'practice';
+                resetGameState();
+                renderGame();
+            }
+        });
+
+        // 计时/休闲模式切换
+        document.getElementById('btn-timed')?.addEventListener('click', () => {
+            if (!isTimedMode) {
+                isTimedMode = true;
+                resetTimer();
+                renderGame();
+            }
+        });
+
+        document.getElementById('btn-notimed')?.addEventListener('click', () => {
+            if (isTimedMode) {
+                isTimedMode = false;
+                stopTimer();
+                renderGame();
+            }
+        });
+
+        // 闯关模式 - 选择关卡
+        document.querySelectorAll('.level-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const level = parseInt(card.dataset.level);
+                if (level <= unlockedLevels) {
+                    currentLevel = level;
+                    currentSubQuestions = getRandomQuestions(level - 1);
+                    currentQIndex = 0;
+                    lives = 3;
+                    waitingNext = false;
+                    lastFeedback = '';
+                    resetTimer();
+                    renderGame();
+                    startTimer();
+                }
+            });
+        });
+
+        // 特训模式 - 选择专题
+        document.querySelectorAll('.topic-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const topic = parseInt(card.dataset.topic);
+                practiceTopic = topic;
+                practiceQuestions = getRandomQuestions(topic);
+                practiceIndex = 0;
+                practiceLives = 3;
+                waitingNext = false;
+                lastFeedback = '';
+                resetTimer();
+                renderGame();
+                startTimer();
+            });
+        });
+
+        // 选项按钮
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (waitingNext) return;
+                const selectedOpt = btn.dataset.opt;
+                checkAnswer(selectedOpt);
+            });
+        });
+
+        // 下一题按钮
+        document.getElementById('btn-next')?.addEventListener('click', goToNextQuestion);
+
+        // 重新开始按钮
+        document.getElementById('btn-restart')?.addEventListener('click', resetGameState);
+    }
+
+    // 检查答案
+    function checkAnswer(selectedOpt) {
+        stopTimer();
+        waitingNext = true;
+        const correctAnswer = currentQuestionObj.answer;
+
+        if (selectedOpt === correctAnswer) {
+            lastFeedback = `✅ 答对啦！${currentQuestionObj.explanation}`;
+            goToNextQuestion();
+        } else {
+            handleWrongAnswer(`❌ 答错了哦～正确答案是${correctAnswer}，${currentQuestionObj.explanation}`);
+        }
+
+        renderGame();
+    }
+
+    // 处理答错
+    function handleWrongAnswer(msg) {
+        lastFeedback = msg;
+        const isCampaign = globalMode === 'campaign';
+        
+        if (isCampaign) {
+            lives--;
+            if (lives <= 0) {
+                gameOverFlag = true;
+            }
+        } else {
+            practiceLives--;
+            if (practiceLives <= 0) {
+                gameOverFlag = true;
+            }
+        }
+
+        renderGame();
+    }
+
+    // 下一题
+    function goToNextQuestion() {
+        waitingNext = false;
+        lastFeedback = '';
+        const isCampaign = globalMode === 'campaign';
+        resetTimer();
+
+        if (isCampaign) {
+            currentQIndex++;
+            if (currentQIndex >= currentSubQuestions.length) {
+                // 关卡完成
+                unlockedLevels = Math.max(unlockedLevels, currentLevel + 1);
+                if (currentLevel >= 15) {
+                    gameWin = true;
+                } else {
+                    currentLevel = 0; // 返回地图
+                }
+            }
+        } else {
+            practiceIndex++;
+            if (practiceIndex >= practiceQuestions.length) {
+                gameWin = true;
+            }
+        }
+
+        renderGame();
+        startTimer();
+    }
+
+    // 重置游戏状态
+    function resetGameState() {
+        // 闯关模式
+        currentLevel = 0;
+        currentSubQuestions = [];
+        currentQIndex = 0;
+        lives = 3;
+        // 特训模式
+        practiceTopic = -1;
+        practiceQuestions = [];
+        practiceIndex = 0;
+        practiceLives = 3;
+        // 通用
+        gameWin = false;
+        gameOverFlag = false;
+        waitingNext = false;
+        lastFeedback = '';
+        currentQuestionObj = null;
+        stopTimer();
+        timeLeft = 30;
+        // 保留模式和计时设置
+        renderGame();
+    }
+
+    // ==================== 初始化游戏 ====================
+    window.addEventListener('DOMContentLoaded', () => {
+        // 初始化特训模式选题状态为-1（未选择）
+        practiceTopic = -1;
+        renderGame();
+    });
+</script>
+</body>
+</html>
